@@ -1,1 +1,963 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Andriy's Phrase Cards</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one centred column (max 680px). Lesson chips + mode on top, one flip card as the hero, two answer buttons; Exercises tab with eight self-checks; settings and progress code at the bottom. Palette: cream, dusty pink, chocolate, blue-grey. */
+:root{
+  --bg:#F5EDE3; --surface:#FFFAF4; --surface-2:#EFE4D7; --ink:#3A2820; --muted:#7D6B60; --line:#E3D4C4;
+  --pink:#D4A29C; --pink-soft:#F3E0DB; --pink-ink:#8E4F48;
+  --blue:#71869C; --blue-soft:#DEE6EE; --blue-ink:#3F5468;
+  --good:#4F7F5E; --good-soft:#DCEBDF; --bad:#A9564E; --bad-soft:#F5DEDA;
+  --shadow:0 1px 0 rgba(58,40,32,.04),0 12px 30px -14px rgba(58,40,32,.28);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#211813; --surface:#2C211B; --surface-2:#372A23; --ink:#F2E7DA; --muted:#B5A396; --line:#45362D;
+  --pink:#C99189; --pink-soft:#46302C; --pink-ink:#F0C3BC;
+  --blue:#94A8BD; --blue-soft:#2D3945; --blue-ink:#C9D7E5;
+  --good:#8FC09D; --good-soft:#24372A; --bad:#E09A92; --bad-soft:#47292A;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 14px 30px -14px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#211813; --surface:#2C211B; --surface-2:#372A23; --ink:#F2E7DA; --muted:#B5A396; --line:#45362D;
+  --pink:#C99189; --pink-soft:#46302C; --pink-ink:#F0C3BC;
+  --blue:#94A8BD; --blue-soft:#2D3945; --blue-ink:#C9D7E5;
+  --good:#8FC09D; --good-soft:#24372A; --bad:#E09A92; --bad-soft:#47292A;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 14px 30px -14px rgba(0,0,0,.6); color-scheme:dark}
 
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+section{display:flex;flex-direction:column;gap:14px;min-width:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,7vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--pink-ink)}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.chip.k{background:var(--blue-soft);color:var(--blue-ink)}
+.chip.r{background:var(--pink-soft);color:var(--pink-ink)}
+
+.tabs{display:flex;gap:4px;padding:4px;background:var(--surface-2);border-radius:14px}
+.tab{flex:1;border:0;background:transparent;padding:10px 12px;border-radius:10px;font-weight:700;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+.lessons{display:flex;flex-direction:column;gap:8px}
+.lesson-row{display:flex;flex-wrap:wrap;gap:6px}
+.lchip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;font-variant-numeric:tabular-nums}
+.lchip small{font-weight:600;opacity:.75}
+.lchip[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-ink)}
+.lchip.all[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toggle{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+.toggle[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{border:1px solid var(--line);background:var(--surface);padding:7px 10px;border-radius:999px;font-size:13px;font-weight:600;max-width:100%}
+.spacer{flex:1}
+
+.progress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{flex:1;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--pink);border-radius:99px;transition:width .3s}
+.linkbtn{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:12px;padding:0}
+
+.scene{perspective:1400px}
+.card{position:relative;display:grid;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.3,.7,.2,1);cursor:pointer;min-height:310px}
+.card.flipped{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.back{transform:rotateY(180deg)}
+.card:not(.flipped) .back,.card.flipped .front{pointer-events:none}
+.face-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.lang{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.tag{font-size:11px;font-weight:700;color:var(--blue-ink);background:var(--blue-soft);border-radius:999px;padding:2px 8px;margin-left:6px;letter-spacing:.04em;text-transform:none}
+.front .main{flex:1;display:flex;align-items:center;justify-content:center;text-align:center}
+.phrase{font-family:var(--display);font-weight:700;font-size:clamp(26px,6.4vw,40px);line-height:1.12;text-wrap:balance;margin:0;overflow-wrap:anywhere}
+.uk{font-family:var(--body);font-weight:800;letter-spacing:-.01em}
+.hint{font-size:12px;color:var(--muted);text-align:center}
+.say{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--blue-soft);color:var(--blue-ink);display:grid;place-items:center}
+.say svg{width:20px;height:20px}
+.say:active{transform:scale(.94)}
+.dict{font-size:12px;font-weight:700;color:var(--blue-ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.dict:hover{background:var(--blue-soft)}
+
+.back-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.back-head .t{min-width:0}
+.back-head .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.big{font-family:var(--display);font-weight:700;font-size:clamp(22px,5.4vw,30px);line-height:1.15;margin:0;text-wrap:balance;overflow-wrap:anywhere}
+.big.uk{font-family:var(--body);font-weight:800}
+.small{color:var(--muted);font-weight:600;font-size:14px;margin:2px 0 0}
+.block{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:12px}
+.label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.ex{margin:0;font-size:16px}
+.gap{border:0;border-bottom:2px dotted var(--pink);background:var(--pink-soft);color:var(--pink-ink);font-weight:700;padding:0 6px;border-radius:6px 6px 0 0;min-width:3.5em}
+.cols{display:flex;flex-wrap:wrap;gap:6px}
+.col{background:var(--surface-2);padding:4px 10px;border-radius:8px;font-size:13.5px;font-weight:600}
+
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:1.5px solid transparent;border-radius:14px;padding:13px 14px;font-weight:700;font-size:15px}
+.btn-r{background:var(--pink-soft);color:var(--pink-ink);border-color:var(--pink)}
+.btn-k{background:var(--blue-soft);color:var(--blue-ink);border-color:var(--blue)}
+.btn-plain{background:var(--surface);border-color:var(--line)}
+.btn-dark{background:var(--ink);color:var(--bg)}
+.btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.keys{font-size:12px;color:var(--muted);text-align:center}
+.keys kbd{font-family:var(--body);background:var(--surface-2);border-radius:4px;padding:0 5px;font-size:11px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel h2{font-family:var(--display);font-size:24px;margin:0;line-height:1.15}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.list li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list b{font-weight:700}
+.list span{color:var(--muted);text-align:right}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.muted{color:var(--muted);margin:0}
+
+.ex-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ex-tab{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 6px;font-weight:700;font-size:13px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.ex-tab small{font-weight:500;font-size:11px}
+.ex-tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+@media (max-width:480px){.ex-tabs{grid-template-columns:1fr 1fr}}
+.fx-step{display:flex;flex-direction:column;gap:12px}
+.sit-uk{font-size:14px;color:var(--muted);margin:0}
+.fx-sent{display:flex;flex-wrap:wrap;gap:6px;font-size:18px}
+.fx-part{border:1.5px dashed var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;font-weight:600;text-align:left}
+.fx-part:hover{border-color:var(--blue)}
+.fx-part.miss{border-style:solid;border-color:var(--line);opacity:.55;animation:shake .35s}
+.fx-part.found{border-style:solid;border-color:var(--bad);background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
+.fx-part.fixed{border-style:solid;text-decoration:none;border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.sit-box{background:var(--surface-2);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.sit-text{font-family:var(--display);font-weight:700;font-size:clamp(19px,4.6vw,23px);line-height:1.3;margin:0;text-wrap:pretty}
+.fork{display:flex;flex-direction:column;align-items:center;gap:14px}
+.fork-key{font-family:var(--display);font-weight:700;font-size:clamp(26px,6vw,36px);background:var(--ink);color:var(--bg);border-radius:16px;padding:8px 20px;text-align:center}
+.fork-opts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.fopt{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 16px;font-weight:700}
+.fopt[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-ink)}
+.fopt.good{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.fopt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
+.fopt.missed{border-color:var(--good);border-style:dashed;color:var(--good)}
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;padding:10px;border:1.5px dashed var(--line);border-radius:14px}
+.schip{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-weight:600;font-size:14px;text-align:left}
+.schip.sel{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-ink)}
+.schip.good{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.schip.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.schip small{display:block;font-weight:600;font-size:11px}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bin{border:1.5px solid var(--line);background:var(--surface-2);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:90px;text-align:left;cursor:pointer;min-width:0}
+.bin.armed{border-color:var(--blue);background:var(--blue-soft)}
+.bin-name{border:0;background:none;padding:0;text-align:left;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bin-items{display:flex;flex-wrap:wrap;gap:6px}
+
+.match{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.match .colm{display:flex;flex-direction:column;gap:8px;min-width:0}
+.m{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;text-align:left;font-weight:600;min-height:48px;overflow-wrap:anywhere}
+.m.sel{border-color:var(--blue);background:var(--blue-soft)}
+.m.ok{border-color:var(--good);background:var(--good-soft);color:var(--good);opacity:.7;cursor:default}
+.m.no{border-color:var(--bad);background:var(--bad-soft);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.q-meta{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.q-sent{font-size:18px;line-height:1.9;margin:0}
+.q-sent input,.typed{border:0;border-bottom:2px solid var(--pink);background:var(--pink-soft);border-radius:6px 6px 0 0;padding:2px 6px;font-weight:700;color:var(--pink-ink);max-width:100%}
+.typed{width:100%;font-size:18px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.q-sent input.good,.typed.good{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.q-sent input.wrong,.typed.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.fb{margin:0;font-weight:600;min-height:1.5em}
+.fb.good{color:var(--good)} .fb.wrong{color:var(--bad)}
+.opts{display:grid;gap:8px}
+.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;text-align:left;font-weight:600}
+.opt.good{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.q-phrase{display:flex;align-items:center;gap:12px}
+.q-phrase .big{flex:1;min-width:0}
+.play{display:flex;gap:10px;flex-wrap:wrap}
+.score{font-family:var(--display);font-size:52px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.score small{font-size:22px;color:var(--muted)}
+
+details.settings{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:4px 18px}
+details.settings summary{cursor:pointer;font-weight:700;padding:12px 0;list-style-position:inside}
+.set-body{display:flex;flex-direction:column;gap:18px;padding-bottom:16px}
+.set-body .field{display:flex;flex-direction:column;gap:8px}
+.set-body select{border-radius:10px;width:100%}
+textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:8px 10px;font-size:12px;resize:vertical;overflow-wrap:anywhere}
+.note{font-size:13px;color:var(--muted);margin:0}
+.ok-msg{font-size:13px;font-weight:600;color:var(--good);margin:0;min-height:1.2em}
+.warn-msg{font-size:13px;font-weight:600;color:var(--bad);margin:0}
+@media (prefers-reduced-motion: reduce){.card,.bar i{transition:none}.m.no{animation:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">English · B1 · Ukrainian</div>
+    <h1>Andriy's <em>phrase</em> cards</h1>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="lessons">
+    <span class="label">Lessons</span>
+    <div class="lesson-row" id="lessonRow"></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tabCards" role="tab" aria-selected="true" type="button">Cards</button>
+    <button class="tab" id="tabEx" role="tab" aria-selected="false" type="button">Exercises</button>
+  </div>
+
+  <section id="viewCards"></section>
+  <section id="viewEx" hidden></section>
+
+  <details class="settings" id="settings">
+    <summary>Settings and progress</summary>
+    <div class="set-body">
+      <div class="field">
+        <label class="label" for="voiceSel">Voice</label>
+        <select id="voiceSel"></select>
+        <div class="row"><button class="btn btn-plain btn-sm" id="listen" type="button">Listen</button></div>
+        <p class="note" id="voiceNote"></p>
+        <p class="note">Voices marked ★ sound the most natural. On iPhone: open Settings, then Accessibility, Spoken Content, Voices, English, and download a voice marked Enhanced or Premium. Then reopen this page.</p>
+      </div>
+      <div class="field">
+        <label class="label" for="code">Progress code</label>
+        <p class="note">Always open this page in the same browser (Safari or Chrome), not inside Telegram or Instagram. Progress is saved in that browser. To move it to another device, copy the code here and paste it there.</p>
+        <textarea id="code" spellcheck="false" placeholder="Paste a progress code here, then press Restore from code"></textarea>
+        <div class="row">
+          <button class="btn btn-plain btn-sm" id="copyCode" type="button">Copy progress code</button>
+          <button class="btn btn-plain btn-sm" id="restore" type="button">Restore from code</button>
+        </div>
+        <p class="ok-msg" id="codeMsg" role="status"></p>
+        <p class="warn-msg" id="storeMsg" role="status" hidden>This browser is blocking saving, so progress will be lost when you close the page. Open the page in Safari or Chrome.</p>
+      </div>
+      <div class="field">
+        <span class="label">Reset</span>
+        <div class="row"><button class="btn btn-plain btn-sm" id="reset" type="button">Reset progress</button></div>
+        <p class="ok-msg" id="resetMsg" role="status"></p>
+      </div>
+    </div>
+  </details>
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+/* CARDS: lesson, en, uk, ex (exactly one ___), ans (word in the gap, as written in ex), col (2-3), dict (Cambridge search), kind (group for Categories, optional), say (optional spoken version) */
+const CARDS=[
+{lesson:'Lesson 1',en:'unconscious',uk:'непритомний, без свідомості',ex:'The driver was ___ when the ambulance arrived.',ans:'unconscious',col:['be knocked unconscious','an unconscious patient','unconscious for ten minutes'],dict:'unconscious'},
+{lesson:'Lesson 1',en:'inside lane',uk:'внутрішня смуга (руху)',ex:'He was driving in the inside ___ when the other car hit him.',ans:'lane',col:['drive in the inside lane','move into the inside lane','overtake on the inside'],dict:'inside lane'},
+{lesson:'Lesson 1',en:'injuries',uk:'травми, поранення',ex:'Three people suffered serious ___ in the crash.',ans:'injuries',col:['suffer injuries','serious injuries','minor injuries'],dict:'injury'},
+{lesson:'Lesson 1',en:'sidewalk',uk:'тротуар (амер. англ.)',ex:'Please don\'t ride your bike on the ___.',ans:'sidewalk',col:['walk on the sidewalk','a crowded sidewalk','a sidewalk café'],dict:'sidewalk'},
+{lesson:'Lesson 1',en:'amazingly',uk:'дивовижно, на диво',ex:'The old car was ___ cheap to repair.',ans:'amazingly',col:['amazingly enough','amazingly well','amazingly calm'],dict:'amazingly'},
+{lesson:'Lesson 1',en:'fortunately',uk:'на щастя',ex:'___, a doctor was already at the scene.',ans:'Fortunately',col:['fortunately for me','but fortunately','fortunately, nobody was hurt'],dict:'fortunately'},
+{lesson:'Lesson 1',en:'apparently',uk:'судячи з усього, нібито',ex:'___, the road will be closed all week.',ans:'Apparently',col:['apparently not','apparently so','apparently for no reason'],dict:'apparently'},
+{lesson:'Lesson 1',en:'according to',uk:'згідно з, за словами',ex:'___ to the police, the driver was going too fast.',ans:'According',col:['according to the police','according to the report','according to him'],dict:'according to'},
+{lesson:'Lesson 1',en:'onlooker',uk:'спостерігач, очевидець',ex:'A crowd of ___ stood and watched the firefighters.',ans:'onlookers',col:['curious onlookers','a crowd of onlookers','onlookers gathered'],dict:'onlooker'},
+{lesson:'Lesson 1',en:'horn',uk:'гудок, клаксон',ex:'He pressed the ___ when the cyclist crossed the road.',ans:'horn',col:['honk the horn','a car horn','press the horn'],dict:'horn'},
+{lesson:'Lesson 1',en:'bruise',uk:'синець',ex:'She had a big ___ on her arm after the fall.',ans:'bruise',col:['cuts and bruises','a nasty bruise','a bruise on your knee'],dict:'bruise'},
+{lesson:'Lesson 1',en:'furious',uk:'розлючений, у люті',ex:'My dad was ___ when I came home at 3 a.m.',ans:'furious',col:['furious with someone','absolutely furious','a furious argument'],dict:'furious'},
+{lesson:'Lesson 1',en:'in a row',uk:'підряд',ex:'We lost three games in a ___.',ans:'row',col:['three days in a row','win five games in a row','for the second time in a row'],dict:'in a row'},
+{lesson:'Lesson 1',en:'hold my nerve',uk:'не втратити самовладання, втримати нерви',ex:'I was scared, but I managed to hold my ___.',ans:'nerve',col:['hold your nerve','lose your nerve','keep your nerve'],dict:'hold your nerve'},
+{lesson:'Lesson 1',en:'a turning point',uk:'поворотний момент',ex:'Moving to Spain was a ___ point in my life.',ans:'turning',col:['a major turning point','reach a turning point','a turning point in history'],dict:'turning point'},
+{lesson:'Lesson 1',en:'however',uk:'однак, проте',ex:'I wanted to help. ___, I was too far away.',ans:'However',col:['; however,','however much','however hard you try'],dict:'however'},
+{lesson:'Lesson 1',en:'confident',uk:'впевнений',ex:'I felt ___ before the exam because I had studied a lot.',ans:'confident',col:['feel confident','confident about the future','a confident smile'],dict:'confident'},
+{lesson:'Lesson 2',en:'entertainment',uk:'розваги, розважальна індустрія',ex:'Going to the cinema is my favourite form of ___.',ans:'entertainment',col:['live entertainment','the entertainment industry','a form of entertainment'],dict:'entertainment',kind:'Streaming and TV'},
+{lesson:'Lesson 2',en:'streaming service',uk:'стрімінговий сервіс (перегляд фільмів онлайн)',ex:'Netflix is a popular ___ service with thousands of films and series.',ans:'streaming',col:['sign up for a streaming service','a popular streaming service','cancel a streaming service'],dict:'streaming',kind:'Streaming and TV'},
+{lesson:'Lesson 2',en:'on-demand service',uk:'сервіс «на вимогу» (дивись, коли захочеш)',ex:'With an ___ service, you can watch a film whenever you want.',ans:'on-demand',col:['an on-demand service','video on demand','available on demand'],dict:'on-demand',kind:'Streaming and TV'},
+{lesson:'Lesson 2',en:'appealing to',uk:'привабливий для, такий, що подобається (комусь)',ex:'This advert is very ___ to young people.',ans:'appealing',col:['appealing to young people','appealing to the eye','a very appealing idea'],dict:'appealing',kind:'Describing and judging'},
+{lesson:'Lesson 2',en:'binge-watch',uk:'дивитися запоєм (багато серій поспіль)',ex:'We stayed in and decided to ___ the whole series in one weekend.',ans:'binge-watch',col:['binge-watch a series','binge-watch a whole season','binge-watch a box set'],dict:'binge-watch',kind:'Streaming and TV'},
+{lesson:'Lesson 2',en:'plot',uk:'сюжет',ex:'The film has a great cast, but the ___ is hard to follow.',ans:'plot',col:['follow the plot','a complicated plot','a plot twist'],dict:'plot',kind:'Streaming and TV'},
+{lesson:'Lesson 2',en:'ridiculous',uk:'безглуздий, смішний, абсурдний',ex:'It\'s ___ to pay twenty euros for a small coffee.',ans:'ridiculous',col:['absolutely ridiculous','a ridiculous idea','look ridiculous'],dict:'ridiculous',kind:'Describing and judging'},
+{lesson:'Lesson 2',en:'smooth-talking',uk:'красномовний, улесливий (вміє переконати)',ex:'The ___ salesman almost made me buy a phone I didn\'t need.',ans:'smooth-talking',col:['a smooth-talking salesman','a smooth-talking politician','a smooth talker'],dict:'smooth-talking',kind:'Describing and judging'},
+{lesson:'Lesson 2',en:'wise-cracking',uk:'дотепний, той, що сипле жартами (часто саркастично)',ex:'The ___ hero makes a joke even when he is in danger.',ans:'wise-cracking',col:['a wise-cracking hero','a wise-cracking detective','make a wisecrack'],dict:'wisecrack',kind:'Describing and judging'},
+{lesson:'Lesson 2',en:'devastate',uk:'спустошувати, руйнувати; глибоко вразити (шокувати)',ex:'The storm ___ the whole village last night.',ans:'devastated',col:['devastate a town','be devastated by the news','a devastating loss'],dict:'devastate',kind:'Law, health and news'},
+{lesson:'Lesson 2',en:'a cure for cancer',uk:'ліки від раку, засіб вилікувати рак',ex:'Doctors around the world are trying to find a ___ for cancer.',ans:'cure',col:['find a cure for cancer','a cure for a disease','a miracle cure'],dict:'cure',kind:'Law, health and news'},
+{lesson:'Lesson 2',en:'find guilty',uk:'визнати винним (про суд, присяжних)',ex:'The jury found him ___ of stealing the money.',ans:'guilty',col:['find someone guilty','be found guilty of a crime','found guilty of murder'],dict:'guilty',kind:'Law, health and news'},
+{lesson:'Lesson 2',en:'at my convenience',uk:'коли мені зручно',ex:'With streaming, I can watch my favourite series at my ___.',ans:'convenience',col:['at your convenience','at your earliest convenience','for your convenience'],dict:'convenience',kind:'Streaming and TV'},
+{lesson:'Lesson 2',en:'pointless',uk:'безглуздий, марний',ex:'It\'s ___ to argue with him because he never changes his mind.',ans:'pointless',col:['a pointless argument','it\'s pointless to try','completely pointless'],dict:'pointless',kind:'Describing and judging'}
+];
+/* FORKS: lesson, word, ok (go with it), bad (1 extra), why (short, Ukrainian) */
+const FORKS=[
+{lesson:'Lesson 1',word:'lose',ok:['your nerve','consciousness','your temper'],bad:['a bruise'],why:'lose your nerve (втратити самовладання), lose consciousness (знепритомніти), lose your temper (вийти з себе). Але синець не «втрачають»: get a bruise.'},
+{lesson:'Lesson 1',word:'sound',ok:['the horn','the alarm','a warning'],bad:['a sidewalk'],why:'sound the horn / the alarm / a warning означає подати сигнал. A sidewalk — це місце, де ходять: walk on the sidewalk.'},
+{lesson:'Lesson 1',word:'feel',ok:['confident','furious','nervous'],bad:['unconscious'],why:'feel confident / furious / nervous описують емоції. Unconscious — це стан: be unconscious або lose consciousness.'},
+{lesson:'Lesson 1',word:'reach',ok:['a turning point','a decision','a conclusion'],bad:['a bruise'],why:'reach a turning point / a decision / a conclusion — дійти до чогось. Синець отримують: get a bruise.'},
+{lesson:'Lesson 2',word:'find',ok:['a cure','someone guilty','a solution'],bad:['a decision'],why:'find a cure / someone guilty / a solution. Але рішення ухвалюють: make a decision.'},
+{lesson:'Lesson 2',word:'follow',ok:['the plot','the news','the rules'],bad:['a mistake'],why:'follow the plot / the news / the rules. Але помилки роблять: make a mistake.'},
+{lesson:'Lesson 2',word:'tell',ok:['a joke','a lie','a story'],bad:['a wisecrack'],why:'tell a joke / a lie / a story. Але дотепну репліку кидають: make a wisecrack.'}
+];
+/* SORTS: lesson, title, cats (group name -> phrases). Each phrase is in exactly one group. */
+const SORTS=[
+{lesson:'Lesson 1',title:'Sort the phrases from the accident story',cats:{
+ 'At the scene':['unconscious','inside lane','injuries','sidewalk','onlooker','horn','bruise'],
+ 'Feelings and nerve':['furious','confident','hold my nerve'],
+ 'Linking words':['amazingly','fortunately','apparently','according to','however'],
+ 'Time and change':['in a row','a turning point']}}
+];
+
+/* FIXES (exercise "Mistakes"): one per phrase. lesson, en (the card's en), s (sentence with one mistake), bad (the wrong part, exactly as written in s), good (the correction), why (short, Ukrainian) */
+const FIXES=[
+{lesson:'Lesson 1',en:'unconscious',s:'The driver was unconsciously when the ambulance arrived.',bad:'unconsciously',good:'unconscious',why:'Після was потрібен прикметник: unconscious (без свідомості).'},
+{lesson:'Lesson 1',en:'inside lane',s:'He was driving in the inside line when the other car hit him.',bad:'line',good:'lane',why:'Смуга руху — lane. Line — це лінія.'},
+{lesson:'Lesson 1',en:'injuries',s:'The accident caused a lot of injure.',bad:'injure.',good:'injuries.',why:'Потрібен іменник injuries (травми). Injure — це дієслово.'},
+{lesson:'Lesson 1',en:'sidewalk',s:'Please don\'t ride your bike in the sidewalk.',bad:'in',good:'on',why:'Кажемо on the sidewalk: «на» тротуарі.'},
+{lesson:'Lesson 1',en:'amazingly',s:'Amazing, nobody was hurt in the crash.',bad:'Amazing,',good:'Amazingly,',why:'На початку речення потрібен прислівник: Amazingly, …'},
+{lesson:'Lesson 1',en:'fortunately',s:'Fortunately for I, nobody was hurt in the crash.',bad:'I,',good:'me,',why:'Після for ставимо me: fortunately for me.'},
+{lesson:'Lesson 1',en:'apparently',s:'Apparently, he don\'t know about the accident.',bad:'don\'t',good:'doesn\'t',why:'З he / she / it потрібно doesn\'t: he doesn\'t know.'},
+{lesson:'Lesson 1',en:'according to',s:'According with the police, the driver was going too fast.',bad:'with',good:'to',why:'Правильно: according to (а не with).'},
+{lesson:'Lesson 1',en:'onlooker',s:'A crowd of onlooker stood and watched the firefighters.',bad:'onlooker',good:'onlookers',why:'Після a crowd of потрібна множина: onlookers.'},
+{lesson:'Lesson 1',en:'horn',s:'He pressed the horn when the cyclist cross the road.',bad:'cross',good:'crossed',why:'Минулий час: the cyclist crossed the road.'},
+{lesson:'Lesson 1',en:'bruise',s:'She has a big bruise in her arm after the fall.',bad:'in',good:'on',why:'Синець на руці: a bruise on her arm.'},
+{lesson:'Lesson 1',en:'furious',s:'My dad was furious on me when I came home at 3 a.m.',bad:'on',good:'with',why:'Розлючений на когось: furious with someone.'},
+{lesson:'Lesson 1',en:'in a row',s:'We lost three games on a row.',bad:'on',good:'in',why:'Підряд: in a row.'},
+{lesson:'Lesson 1',en:'hold my nerve',s:'I was scared, but I managed to hold my nerves.',bad:'nerves.',good:'nerve.',why:'У цьому виразі nerve в однині: hold your nerve.'},
+{lesson:'Lesson 1',en:'a turning point',s:'Moving to Spain was a turning moment in my life.',bad:'moment',good:'point',why:'Поворотний момент: a turning point.'},
+{lesson:'Lesson 1',en:'however',s:'She studied hard. However, she not passed the exam.',bad:'not passed',good:'did not pass',why:'Заперечення в минулому: did not + дієслово (did not pass).'},
+{lesson:'Lesson 1',en:'confident',s:'I felt confidence before the exam because I had studied a lot.',bad:'confidence',good:'confident',why:'Після felt потрібен прикметник: confident.'},
+{lesson:'Lesson 2',en:'entertainment',s:'There isn\'t much entertainments in my town.',bad:'entertainments',good:'entertainment',why:'Entertainment — незлічуваний іменник: much entertainment.'},
+{lesson:'Lesson 2',en:'streaming service',s:'My brother pays for two stream services.',bad:'stream',good:'streaming',why:'Перед service потрібно streaming (з -ing).'},
+{lesson:'Lesson 2',en:'on-demand service',s:'With this app you can watch any film in demand.',bad:'in demand.',good:'on demand.',why:'On demand — коли захочеш. In demand — користується великим попитом.'},
+{lesson:'Lesson 2',en:'appealing to',s:'This kind of music is very appealing for teenagers.',bad:'for',good:'to',why:'Кажемо appealing to someone.'},
+{lesson:'Lesson 2',en:'binge-watch',s:'Last weekend we binge-watch the whole series in two days.',bad:'binge-watch',good:'binge-watched',why:'Минулий час: binge-watched.'},
+{lesson:'Lesson 2',en:'plot',s:'The plot of this series are very interesting.',bad:'are',good:'is',why:'Plot — однина, тому is.'},
+{lesson:'Lesson 2',en:'ridiculous',s:'It is ridiculously to pay so much for a bottle of water.',bad:'ridiculously',good:'ridiculous',why:'Після it is потрібен прикметник: ridiculous.'},
+{lesson:'Lesson 2',en:'smooth-talking',s:'Be careful with that smooth-talk salesman.',bad:'smooth-talk',good:'smooth-talking',why:'Це прикметник: smooth-talking (з -ing).'},
+{lesson:'Lesson 2',en:'wise-cracking',s:'The hero is a wise-cracked man who jokes all the time.',bad:'wise-cracked',good:'wise-cracking',why:'Потрібен прикметник з -ing: wise-cracking (той, що жартує).'},
+{lesson:'Lesson 2',en:'devastate',s:'I was devastating when I heard the bad news.',bad:'devastating',good:'devastated',why:'Devastated — це я (мої почуття). Devastating — це щось нищівне, наприклад новина.'},
+{lesson:'Lesson 2',en:'a cure for cancer',s:'Scientists are still looking for a cure of cancer.',bad:'of',good:'for',why:'Кажемо a cure for a disease.'},
+{lesson:'Lesson 2',en:'find guilty',s:'The jury found him guilty for stealing the car.',bad:'for',good:'of',why:'Guilty of + дія: guilty of stealing.'},
+{lesson:'Lesson 2',en:'at my convenience',s:'You can pay the bill in your convenience.',bad:'in',good:'at',why:'Правильно: at your convenience (коли вам зручно).'},
+{lesson:'Lesson 2',en:'pointless',s:'It is pointless argue with him because he never listens.',bad:'argue',good:'to argue',why:'Після it is pointless потрібно to + дієслово: to argue.'}
+];
+/* SITS (exercise "Situations"): one per phrase. lesson, en (the card's en), sit (situation in English, without the phrase itself), uk (translation of the situation) */
+const SITS=[
+{lesson:'Lesson 1',en:'unconscious',sit:'The paramedics shouted to the man lying on the road, but he did not open his eyes or answer. What was his condition?',uk:'Парамедики гукали до чоловіка, що лежав на дорозі, але він не розплющував очей і не відповідав. У якому він був стані?'},
+{lesson:'Lesson 1',en:'inside lane',sit:'On a curved road, the driver was in the lane closest to the inside of the bend. Which phrase describes it?',uk:'На закругленій дорозі водій їхав смугою, найближчою до внутрішнього боку повороту. Яка фраза це описує?'},
+{lesson:'Lesson 1',en:'injuries',sit:'After the crash, the doctor checks everyone for cuts and broken bones. What is she looking for?',uk:'Після аварії лікарка оглядає всіх на порізи та переломи. Що вона шукає?'},
+{lesson:'Lesson 1',en:'sidewalk',sit:'A boy rides his bike on the path for pedestrians next to the road. What do Americans call this path?',uk:'Хлопчик їде на велосипеді доріжкою для пішоходів біля дороги. Як американці називають цю доріжку?'},
+{lesson:'Lesson 1',en:'amazingly',sit:'Your friend ran a marathon without any training and finished in under four hours. It is hard to believe. How do you start the sentence?',uk:'Ваш друг пробіг марафон без жодного тренування і фінішував менш ніж за чотири години. У це важко повірити. Яким словом почнете речення?'},
+{lesson:'Lesson 1',en:'fortunately',sit:'Your car broke down on an empty road, but a mechanic drove past and helped you. You were lucky. How do you start the story?',uk:'Ваша машина зламалася на порожній дорозі, але повз проїжджав механік і допоміг. Вам пощастило. Яким словом почнете розповідь?'},
+{lesson:'Lesson 1',en:'apparently',sit:'A colleague told you the office will be closed on Monday, but you have not seen the official message. How do you start?',uk:'Колега сказав, що офіс буде зачинений у понеділок, але офіційного повідомлення ви не бачили. Яким словом почнете?'},
+{lesson:'Lesson 1',en:'according to',sit:'You want to name your source of information: the weather app says it will rain tomorrow. How do you introduce the source?',uk:'Ви хочете назвати джерело інформації: у застосунку погоди сказано, що завтра буде дощ. Якою фразою введете джерело?'},
+{lesson:'Lesson 1',en:'onlooker',sit:'One person stands behind the tape and only watches the firefighters. He is not helping. What is he?',uk:'Одна людина стоїть за стрічкою і лише дивиться на пожежників. Вона не допомагає. Хто це?'},
+{lesson:'Lesson 1',en:'horn',sit:'A car blocks the road, and you want to make a loud sound so the driver moves. What do you press?',uk:'Машина перегородила дорогу, і ви хочете подати гучний сигнал, щоб водій поїхав. Що ви натискаєте?'},
+{lesson:'Lesson 1',en:'bruise',sit:'You hit your knee on a table, and now there is a purple mark on your skin. What is it?',uk:'Ви вдарилися коліном об стіл, і тепер на шкірі фіолетова пляма. Що це?'},
+{lesson:'Lesson 1',en:'furious',sit:'Your brother broke your new phone and did not say sorry. You are extremely angry. How do you feel?',uk:'Ваш брат розбив ваш новий телефон і не вибачився. Ви надзвичайно сердиті. Що ви відчуваєте?'},
+{lesson:'Lesson 1',en:'in a row',sit:'Your team won on Monday, Tuesday and Wednesday, with no break in between. How do you describe the wins?',uk:'Ваша команда перемогла в понеділок, у вівторок і в середу без перерви. Як описати ці перемоги?'},
+{lesson:'Lesson 1',en:'hold my nerve',sit:'Before a penalty kick, the crowd is shouting. You are scared, but you stay calm and do not panic. What did you manage to do?',uk:'Перед пенальті натовп кричить. Вам страшно, але ви лишаєтеся спокійним і не панікуєте. Що вам вдалося зробити?'},
+{lesson:'Lesson 1',en:'a turning point',sit:'Meeting your old teacher changed all your plans for the future. What do you call that moment?',uk:'Зустріч зі старим учителем змінила всі ваші плани на майбутнє. Як назвати той момент?'},
+{lesson:'Lesson 1',en:'however',sit:'You like the flat, and then you want to add a problem: it is too expensive. Which word links the two ideas?',uk:'Вам подобається квартира, і ви хочете додати проблему: вона надто дорога. Яке слово поєднує ці дві думки?'},
+{lesson:'Lesson 1',en:'confident',sit:'You studied for weeks and you are sure you will pass the exam. How do you feel?',uk:'Ви готувалися кілька тижнів і певні, що складете іспит. Що ви відчуваєте?'},
+{lesson:'Lesson 2',en:'entertainment',sit:'You ask what people do for fun in a town: cinemas, concerts and shows. Which word covers all of them?',uk:'Ви питаєте, що люди роблять для розваги в місті: кінотеатри, концерти, вистави. Яке слово об\'єднує все це?'},
+{lesson:'Lesson 2',en:'streaming service',sit:'Netflix and Disney+ send films to your phone through the internet, and you pay every month. What is this kind of company called?',uk:'Netflix і Disney+ надсилають фільми на ваш телефон через інтернет, а ви платите щомісяця. Як називається така компанія?'},
+{lesson:'Lesson 2',en:'on-demand service',sit:'Instead of waiting for a programme at a fixed time, you press play whenever you like. What kind of service lets you do this?',uk:'Замість того щоб чекати передачу у визначений час, ви натискаєте «play», коли хочете. Який це тип сервісу?'},
+{lesson:'Lesson 2',en:'appealing to',sit:'A new film is made for teenagers, and teenagers love it. You say it is attractive and interesting for them. Which phrase do you use?',uk:'Новий фільм зроблено для підлітків, і вони його люблять. Ви кажете, що він приваблює їх. Яку фразу використаєте?'},
+{lesson:'Lesson 2',en:'binge-watch',sit:'It is raining on Saturday. You start a series at ten in the morning and watch episode after episode until night. What do you do?',uk:'У суботу йде дощ. Ви вмикаєте серіал о десятій ранку і дивитеся серію за серією до ночі. Що ви робите?'},
+{lesson:'Lesson 2',en:'plot',sit:'A friend asks what the film is about, and you tell the story from the beginning to the end. What are you describing?',uk:'Друг питає, про що фільм, і ви переказуєте історію від початку до кінця. Що ви описуєте?'},
+{lesson:'Lesson 2',en:'ridiculous',sit:'A café asks 15 euros for a small glass of water. It makes no sense. What do you say about the price?',uk:'Кафе просить 15 євро за маленьку склянку води. Це не має сенсу. Що ви скажете про ціну?'},
+{lesson:'Lesson 2',en:'smooth-talking',sit:'A salesman speaks so nicely and confidently that you almost buy a useless thing, but you do not trust him. What is he like?',uk:'Продавець говорить так приємно й упевнено, що ви майже купили непотрібну річ, але йому не довіряєте. Який він?'},
+{lesson:'Lesson 2',en:'wise-cracking',sit:'The hero of the film makes a funny, sarcastic joke every time he is in danger. What kind of hero is he?',uk:'Герой фільму щоразу, потрапивши в небезпеку, кидає смішний саркастичний жарт. Який це герой?'},
+{lesson:'Lesson 2',en:'devastate',sit:'A hurricane destroyed half of the town and left thousands of people without homes. What did the hurricane do to the town?',uk:'Ураган зруйнував половину міста і залишив тисячі людей без домівок. Що ураган зробив із містом?'},
+{lesson:'Lesson 2',en:'a cure for cancer',sit:'Scientists are working to find a medicine that can completely heal people who have cancer. What are they looking for?',uk:'Науковці працюють над ліками, які зможуть повністю вилікувати людей із раком. Що вони шукають?'},
+{lesson:'Lesson 2',en:'find guilty',sit:'At the end of the trial, the jury decides that the man really committed the crime. What do they do?',uk:'Наприкінці суду присяжні вирішують, що чоловік справді вчинив злочин. Що вони роблять?'},
+{lesson:'Lesson 2',en:'at my convenience',sit:'Your boss writes: "There is no hurry. Reply when it suits you." How do you say you will answer when it is easy for you?',uk:'Керівник пише: «Не поспішайте. Відповідайте, коли вам буде зручно». Як сказати, що ви відповісте, коли вам буде зручно?'},
+{lesson:'Lesson 2',en:'pointless',sit:'You spent two hours explaining the rules, but nobody listened and nothing changed. It was a waste of time. How do you describe it?',uk:'Ви дві години пояснювали правила, але ніхто не слухав і нічого не змінилося. Це була марна трата часу. Як це описати?'}
+];
+
+/* ============================ HELPERS ============================ */
+const KEY='andriy-phrase-cards-v1';
+const INT=[1,3,7,14,30,60];
+const MAXB=20;
+const $=s=>document.querySelector(s);
+const isObj=o=>o&&typeof o==='object'&&!Array.isArray(o);
+function h(tag,attrs,...kids){
+  const e=document.createElement(tag);
+  if(attrs)for(const k in attrs){
+    const v=attrs[k];
+    if(v==null||v===false)continue;
+    if(k==='class')e.className=v;
+    else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,'');
+    else e.setAttribute(k,v);
+  }
+  for(const c of kids.flat()){
+    if(c==null||c===false)continue;
+    e.append(typeof c==='object'?c:document.createTextNode(String(c)));
+  }
+  return e;
+}
+function shuf(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function today(){const d=new Date();return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);}
+function norm(s){return String(s).toLowerCase().replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();}
+
+/* ============================ STATE ============================ */
+function fresh(){return{v:1,p:{},b:{},ui:{mix:true,sel:[],mode:'today',shuffle:false,reverse:false,voice:'auto'}};}
+function normState(s){
+  const f=fresh();
+  if(!isObj(s))return f;
+  const ui=Object.assign(f.ui,isObj(s.ui)?s.ui:{});
+  if(!Array.isArray(ui.sel))ui.sel=[];
+  return{v:1,p:isObj(s.p)?s.p:{},b:isObj(s.b)?s.b:{},ui};
+}
+function load(){let s=null;try{const r=localStorage.getItem(KEY);if(r)s=JSON.parse(r);}catch(e){}return normState(s);}
+let storageOk=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));storageOk=true;}catch(e){storageOk=false;}}
+let S=load();
+
+const LESSONS=[...new Set(CARDS.map(c=>c.lesson))];
+const BYEN=new Map(CARDS.map(c=>[c.en,c]));
+function act(){
+  const u=S.ui;
+  if(u.mix)return LESSONS;
+  const l=LESSONS.filter(x=>u.sel.includes(x));
+  return l.length?l:LESSONS;
+}
+function pool(){const a=act();return CARDS.filter(c=>a.includes(c.lesson));}
+function stOf(en){const p=S.p[en];return !p?'n':p.st==='r'?'r':'k';}
+function mark(en,known){
+  const t=today();
+  const p=S.p[en]||{lv:0,due:t,st:'r'};
+  if(known){p.due=t+INT[Math.min(p.lv||0,INT.length-1)];p.lv=(p.lv||0)+1;p.st='k';}
+  else{p.lv=0;p.due=t;p.st='r';}
+  S.p[en]=p;
+}
+
+/* ============================ AUDIO ============================ */
+const SPEECH='speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
+const NOVELTY=/^(albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy)\b/i;
+let VOICES=[];
+function vscore(v){
+  const n=v.name;let s=0;
+  if(/natural/i.test(n))s=100;else if(/neural/i.test(n))s=95;else if(/premium/i.test(n))s=90;
+  else if(/enhanced/i.test(n))s=80;else if(/siri/i.test(n))s=70;else if(/google/i.test(n))s=60;
+  if(/^en[-_](US|GB)/i.test(v.lang))s+=5;
+  if(v.localService)s+=1;
+  return s;
+}
+function loadVoices(){
+  if(!SPEECH)return;
+  try{
+    VOICES=speechSynthesis.getVoices().filter(v=>/^en([-_]|$)/i.test(v.lang)&&!NOVELTY.test(v.name)).map(v=>({v,score:vscore(v)})).sort((a,b)=>b.score-a.score);
+  }catch(e){VOICES=[];}
+  fillVoiceSelect();
+}
+function chosenVoice(){
+  if(S.ui.voice!=='auto'){const f=VOICES.find(x=>(x.v.voiceURI||x.v.name)===S.ui.voice);if(f)return f.v;}
+  return VOICES.length?VOICES[0].v:null;
+}
+function speak(text,rate){
+  if(!SPEECH)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    const v=chosenVoice();
+    if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-US';
+    u.rate=rate||0.95;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function cleanSay(t){
+  return t.replace(/\([^)]*\)/g,' ').replace(/\bsb\b/gi,'someone').replace(/\bsth\b/gi,'something').replace(/(\S+)\/\S+/g,'$1').replace(/\s+/g,' ').trim();
+}
+function sayText(c){return c.say||cleanSay(c.en);}
+const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>';
+function sayBtn(c){
+  const b=h('button',{class:'say',type:'button','aria-label':'Listen to pronunciation',onclick:e=>{e.stopPropagation();speak(sayText(c));}});
+  b.innerHTML=ICON;
+  return b;
+}
+function camUrl(c){return 'https://dictionary.cambridge.org/search/english/direct/?q='+encodeURIComponent(c.dict||c.en);}
+function fillVoiceSelect(){
+  const sel=$('#voiceSel');if(!sel)return;
+  sel.textContent='';
+  sel.append(h('option',{value:'auto'},'Automatic (best available)'));
+  VOICES.forEach(({v,score})=>sel.append(h('option',{value:v.voiceURI||v.name},(score>=60?'★ ':'')+v.name+' ('+v.lang+')')));
+  sel.value=S.ui.voice;
+  if(sel.value!==S.ui.voice)sel.value='auto';
+  $('#voiceNote').textContent=!SPEECH?'This browser cannot read text aloud.':(VOICES.length?'':'No English voices found yet. They may take a moment to load.');
+}
+
+/* ============================ HEADER / LESSONS ============================ */
+function renderHeader(){
+  const pl=pool();let k=0,r=0;
+  pl.forEach(c=>{const s=stOf(c.en);if(s==='k')k++;else if(s==='r')r++;});
+  const st=$('#stats');st.textContent='';
+  st.append(h('span',{class:'chip'},pl.length+' phrases'),h('span',{class:'chip k'},k+' known'),h('span',{class:'chip r'},r+' to review'));
+  const row=$('#lessonRow');row.textContent='';
+  row.append(h('button',{class:'lchip all',type:'button','aria-pressed':String(S.ui.mix),onclick:()=>{S.ui.mix=true;S.ui.sel=[];lessonsChanged();}},'All lessons · mix'));
+  LESSONS.forEach(l=>{
+    const n=CARDS.filter(c=>c.lesson===l).length;
+    row.append(h('button',{class:'lchip',type:'button','aria-pressed':String(!S.ui.mix&&S.ui.sel.includes(l)),onclick:()=>{
+      if(S.ui.mix){S.ui.mix=false;S.ui.sel=[l];}
+      else{const i=S.ui.sel.indexOf(l);if(i>=0)S.ui.sel.splice(i,1);else S.ui.sel.push(l);if(!S.ui.sel.length){S.ui.mix=true;}}
+      lessonsChanged();
+    }},l,h('small',null,String(n))));
+  });
+  $('#storeMsg').hidden=storageOk;
+}
+function lessonsChanged(){save();EX.run=null;renderAll();}
+
+/* ============================ CARDS ============================ */
+function sig(){return S.ui.mode+'|'+(S.ui.mix?'*':act().slice().sort().join(','));}
+function buildBatch(){
+  const mode=S.ui.mode,pl=pool(),t=today(),mk=a=>S.ui.shuffle?shuf(a):a;
+  let ids;
+  if(mode==='today'){
+    const r=pl.filter(c=>stOf(c.en)==='r'),d=pl.filter(c=>stOf(c.en)==='k'&&S.p[c.en].due<=t),n=pl.filter(c=>stOf(c.en)==='n');
+    ids=[...mk(r),...mk(d),...mk(n)].slice(0,MAXB).map(c=>c.en);
+  }else if(mode==='review')ids=mk(pl.filter(c=>stOf(c.en)==='r')).map(c=>c.en);
+  else if(mode==='new')ids=mk(pl.filter(c=>stOf(c.en)==='n')).map(c=>c.en);
+  else ids=mk(pl).map(c=>c.en);
+  return{ids,pos:0,rev:[],known:0,day:t};
+}
+function getBatch(){
+  const s=sig();let b=S.b[s];
+  if(b&&Array.isArray(b.ids)){b.ids=b.ids.filter(e=>BYEN.has(e));b.rev=(b.rev||[]).filter(e=>BYEN.has(e));}
+  if(!b||!Array.isArray(b.ids)||(S.ui.mode==='today'&&b.day!==today())||!b.ids.length){b=buildBatch();S.b[s]=b;save();}
+  else if(S.ui.mode==='all'){
+    const have=new Set(b.ids);const add=pool().map(c=>c.en).filter(e=>!have.has(e));
+    if(add.length)b.ids.push(...add);
+  }
+  b.pos=Math.max(0,Math.min(b.pos|0,b.ids.length));
+  return b;
+}
+function restartBatch(){S.b[sig()]=buildBatch();save();renderAll();}
+function answer(known){
+  const b=getBatch();
+  if(b.pos>=b.ids.length)return;
+  const en=b.ids[b.pos];
+  mark(en,known);
+  if(known){b.known++;b.rev=b.rev.filter(x=>x!==en);}
+  else{
+    if(!b.rev.includes(en))b.rev.push(en);
+    if(S.ui.mode==='today'&&!b.ids.slice(b.pos+1).includes(en))b.ids.push(en);
+  }
+  b.pos++;
+  save();renderAll();
+}
+function renderCards(){
+  const root=$('#viewCards');root.textContent='';
+  const b=getBatch();
+  const modes=[['today','Today'],['all','All cards'],['review','Review only'],['new','New only']];
+  root.append(h('div',{class:'controls'},
+    h('select',{id:'mode','aria-label':'Mode',onchange:e=>{S.ui.mode=e.target.value;save();renderAll();}},modes.map(([v,t])=>h('option',{value:v,selected:S.ui.mode===v},t))),
+    h('button',{class:'toggle',type:'button','aria-pressed':String(S.ui.shuffle),onclick:()=>{S.ui.shuffle=!S.ui.shuffle;S.b[sig()]=buildBatch();save();renderAll();}},'Shuffle'),
+    h('button',{class:'toggle',type:'button','aria-pressed':String(S.ui.reverse),onclick:()=>{S.ui.reverse=!S.ui.reverse;save();renderCards();}},'UA → EN'),
+    h('span',{class:'spacer'}),
+    h('button',{class:'linkbtn',type:'button',onclick:restartBatch},'Start over')));
+  const total=b.ids.length,pos=Math.min(b.pos,total);
+  root.append(h('div',{class:'progress'},
+    h('div',{class:'bar'},h('i',{style:'width:'+(total?Math.round(pos/total*100):0)+'%'})),
+    h('span',null,total?(pos>=total?total:pos+1)+' / '+total:'0 / 0')));
+  if(!total){
+    const msgs={today:'Nothing is due today and there are no new phrases. Come back tomorrow, or go through all the cards.',all:'There are no cards in the selected lessons.',review:'No cards are marked for review. Press Review again on a card to add it here.',new:'You have seen every card in the selected lessons.'};
+    root.append(h('div',{class:'panel'},h('h2',null,'All done'),h('p',{class:'muted'},msgs[S.ui.mode]),
+      S.ui.mode!=='all'?h('div',{class:'row'},h('button',{class:'btn btn-dark',type:'button',onclick:()=>{S.ui.mode='all';save();renderAll();}},'Study all cards')):null));
+    return;
+  }
+  if(b.pos>=total){root.append(summaryView(b));return;}
+  root.append(cardView(b));
+}
+function cardView(b){
+  const c=BYEN.get(b.ids[b.pos]),rev=S.ui.reverse;
+  const front=h('div',{class:'face front'},
+    h('div',{class:'face-top'},h('span',{class:'lang'},rev?'Ukrainian':'English',h('span',{class:'tag'},c.lesson)),rev?h('span'):sayBtn(c)),
+    h('div',{class:'main'},h('p',{class:'phrase'+(rev?' uk':''),lang:rev?'uk':'en'},rev?c.uk:c.en)),
+    h('div',{class:'hint'},'Tap the card to flip'));
+  const parts=c.ex.split('___');
+  const gap=h('button',{class:'gap',type:'button','aria-label':'Show the missing word'},'_____');
+  gap.addEventListener('click',e=>{e.stopPropagation();const on=gap.dataset.s==='1';gap.dataset.s=on?'0':'1';gap.textContent=on?'_____':c.ans;});
+  const back=h('div',{class:'face back'},
+    h('div',{class:'back-head'},
+      h('div',{class:'t'},h('p',{class:'big'+(rev?'':' uk'),lang:rev?'en':'uk'},rev?c.en:c.uk),h('p',{class:'small'},rev?c.uk:c.en)),
+      h('div',{class:'side'},sayBtn(c),h('a',{class:'dict',href:camUrl(c),target:'_blank',rel:'noopener'},'Cambridge ↗'))),
+    h('div',{class:'block'},h('span',{class:'label'},'Example'),h('p',{class:'ex'},parts[0],gap,parts[1])),
+    h('div',{class:'block'},h('span',{class:'label'},'Collocations'),h('div',{class:'cols'},c.col.map(x=>h('span',{class:'col'},x)))));
+  const card=h('div',{class:'card',tabindex:'0',role:'button','aria-label':'Flip card'},front,back);
+  card.addEventListener('click',e=>{if(e.target.closest('button,a'))return;card.classList.toggle('flipped');});
+  return h('div',{class:'fx-step'},
+    h('div',{class:'scene'},card),
+    h('div',{class:'actions'},
+      h('button',{class:'btn btn-r',type:'button',onclick:()=>answer(false)},'Review again'),
+      h('button',{class:'btn btn-k',type:'button',onclick:()=>answer(true)},'I know it')),
+    h('div',{class:'keys'},h('kbd',null,'space'),' flip · ',h('kbd',null,'←'),' review again · ',h('kbd',null,'→'),' I know it'));
+}
+function summaryView(b){
+  const rev=b.rev.slice();
+  const againBtn=h('button',{class:'btn btn-r',type:'button',disabled:!rev.length,onclick:()=>{S.b[sig()]={ids:rev,pos:0,rev:[],known:0,day:today()};save();renderAll();}},'Review these words');
+  return h('div',{class:'panel'},
+    h('span',{class:'label'},'Batch complete'),
+    h('div',{class:'score'},String(b.known),h('small',null,' known · '+rev.length+' to review')),
+    rev.length?h('div',null,h('span',{class:'label'},'Words to review'),h('ul',{class:'list'},rev.map(en=>{const c=BYEN.get(en);return h('li',null,h('b',null,c.en),h('span',{class:'uk',lang:'uk'},c.uk));}))):h('p',{class:'muted'},'Nothing to review from this batch. Nice work.'),
+    h('div',{class:'row'},againBtn,
+      h('button',{class:'btn btn-plain',type:'button',onclick:restartBatch},'Another batch'),
+      h('button',{class:'btn btn-dark',type:'button',onclick:()=>setView('ex')},'To exercises')));
+}
+document.addEventListener('keydown',e=>{
+  if(view!=='cards'||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.target.closest&&e.target.closest('input,textarea,select'))return;
+  const card=$('#viewCards .card');if(!card)return;
+  const onCard=e.target===card;
+  if(e.code==='Space'||e.key===' '||(e.key==='Enter'&&onCard)){
+    if(e.target.closest('button,a,summary'))return;
+    e.preventDefault();card.classList.toggle('flipped');
+  }else if(e.key==='ArrowLeft'){e.preventDefault();answer(false);}
+  else if(e.key==='ArrowRight'){e.preventDefault();answer(true);}
+});
+
+/* ============================ EXERCISES ============================ */
+const EXK=[['match','Matching','phrase and translation'],['fill','Fill the gap','type the word'],['quiz','Quiz','one of four'],['dict','Dictation','listen and type'],['forks','Forks','words that go together'],['sorts','Categories','sort into groups'],['fix','Mistakes','find the error'],['sit','Situations','which phrase fits']];
+let EX={kind:'match',scope:'all',run:null};
+function exPool(){const pl=pool();return EX.scope==='review'?pl.filter(c=>stOf(c.en)==='r'):pl;}
+function redraw(){const box=$('#exBox');if(!box)return;box.textContent='';DRAW[EX.kind](box);}
+function renderEx(){
+  const root=$('#viewEx');root.textContent='';
+  const nRev=pool().filter(c=>stOf(c.en)==='r').length;
+  root.append(
+    h('div',{class:'ex-tabs',role:'tablist'},EXK.map(([k,t,s])=>h('button',{class:'ex-tab',role:'tab',type:'button','aria-selected':String(EX.kind===k),onclick:()=>{EX.kind=k;EX.run=null;renderEx();}},t,h('small',null,s)))),
+    h('div',{class:'controls'},
+      h('button',{class:'toggle',type:'button','aria-pressed':String(EX.scope==='all'),onclick:()=>{EX.scope='all';EX.run=null;renderEx();}},'All phrases'),
+      h('button',{class:'toggle',type:'button','aria-pressed':String(EX.scope==='review'),onclick:()=>{EX.scope='review';EX.run=null;renderEx();}},'Review only ('+nRev+')'),
+      (EX.kind==='forks'||EX.kind==='sorts')?h('span',{class:'note'},'This exercise uses the whole lesson.'):null),
+    h('div',{class:'panel',id:'exBox'}));
+  if(!EX.run)startRun();
+  redraw();
+}
+function distract(en){
+  const c=BYEN.get(en),seen=new Set([c.uk,c.en]),out=[];
+  const add=a=>{for(const x of a){if(out.length>=3)break;if(!seen.has(x.uk)&&!seen.has(x.en)){seen.add(x.uk);out.push(x.en);}}};
+  add(shuf(exPool().filter(x=>x.en!==en)));
+  if(out.length<3)add(shuf(CARDS.filter(x=>x.en!==en)));
+  return shuf([en,...out]);
+}
+function distractSit(en){
+  const c=BYEN.get(en);
+  const ok=x=>x.en!==en&&!(c.kind&&x.kind===c.kind);
+  let out=shuf(exPool().filter(ok)).slice(0,3).map(x=>x.en);
+  if(out.length<3)out=out.concat(shuf(CARDS.filter(x=>ok(x)&&!out.includes(x.en))).slice(0,3-out.length).map(x=>x.en));
+  if(out.length<3)out=out.concat(shuf(CARDS.filter(x=>x.en!==en&&!out.includes(x.en))).slice(0,3-out.length).map(x=>x.en));
+  return shuf([en,...out]);
+}
+function same(a,b){const x=norm(a),y=norm(b);return x===y||x.replace(/ /g,'')===y.replace(/ /g,'');}
+function startRun(){
+  const k=EX.kind,a=act();
+  if(k==='forks'){EX.run={items:shuf(FORKS.filter(f=>a.includes(f.lesson))).map(f=>({...f,opts:shuf([...f.ok,...f.bad])})),i:0,sel:new Set(),checked:false,right:0};return;}
+  if(k==='sorts'){
+    const sets=[];
+    a.forEach(l=>{
+      const own=SORTS.filter(x=>x.lesson===l);
+      if(own.length){sets.push(...own);return;}
+      const cats={};
+      CARDS.filter(c=>c.lesson===l&&c.kind).forEach(c=>{(cats[c.kind]=cats[c.kind]||[]).push(c.en);});
+      if(Object.keys(cats).length>=2)sets.push({lesson:l,title:'Sort the phrases from '+l,cats});
+    });
+    EX.run={sets,order:sets.map(s=>shuf(Object.values(s.cats).flat())),i:0,place:{},sel:null,checked:false,right:0,total:0};return;}
+  const pl=exPool();
+  if(!pl.length){EX.run={empty:true};return;}
+  const ens=shuf(pl.map(c=>c.en));
+  if(k==='match'){
+    const chunks=[];for(let i=0;i<ens.length;i+=5)chunks.push(ens.slice(i,i+5));
+    if(chunks.length>1&&chunks[chunks.length-1].length<3){const l=chunks.pop();chunks[chunks.length-1].push(...l);}
+    EX.run={chunks,ci:0,sel:null,done:new Set(),wrong:new Set(),flash:null,total:ens.length,order:chunks.map(ch=>({l:shuf(ch),r:shuf(ch)}))};
+  }else if(k==='quiz'){
+    EX.run={qs:ens.map(en=>({en,dir:Math.random()<.5?'eu':'ue',opts:distract(en)})),i:0,picked:null,wrong:new Set()};
+  }else if(k==='fix'){
+    const have=new Set(pl.map(c=>c.en));
+    EX.run={qs:shuf(FIXES.filter(f=>have.has(f.en))),i:0,miss:new Set(),found:false,wrong:new Set()};
+  }else if(k==='sit'){
+    const have=new Set(pl.map(c=>c.en));
+    EX.run={qs:shuf(SITS.filter(x=>have.has(x.en))).map(x=>({s:x,opts:distractSit(x.en)})),i:0,picked:null,wrong:new Set()};
+  }else{
+    EX.run={qs:ens,i:0,val:'',checked:false,ok:false,wrong:new Set()};
+  }
+}
+function resultView(title,ok,total,wrong){
+  const w=[...wrong];
+  const addBtn=w.length?h('button',{class:'btn btn-r',type:'button'},'Add these words to review'):null;
+  if(addBtn)addBtn.addEventListener('click',()=>{w.forEach(en=>mark(en,false));save();addBtn.textContent='Added to review ✓';addBtn.disabled=true;renderHeader();});
+  return h('div',{class:'fx-step'},
+    h('span',{class:'label'},title+' · result'),
+    h('div',{class:'score'},String(ok),h('small',null,' / '+total)),
+    w.length?h('div',null,h('span',{class:'label'},'Mistakes'),h('ul',{class:'list'},w.map(en=>{const c=BYEN.get(en);return h('li',null,h('b',null,c.en),h('span',{class:'uk',lang:'uk'},c.uk));}))):h('p',{class:'muted'},'No mistakes. Well done!'),
+    h('div',{class:'row'},addBtn,h('button',{class:'btn btn-dark',type:'button',onclick:()=>{EX.run=null;renderEx();}},'Try again')));
+}
+function emptyView(){
+  return h('div',{class:'fx-step'},h('p',{class:'muted'},EX.scope==='review'?'No phrases are marked for review yet. Press Review again on a card, or switch to All phrases.':'There are no phrases in the selected lessons.'));
+}
+const DRAW={};
+
+DRAW.match=function(box){
+  const r=EX.run;
+  if(r.empty){box.append(emptyView());return;}
+  if(r.ci>=r.chunks.length){box.append(resultView('Matching',r.total-r.wrong.size,r.total,r.wrong));return;}
+  const o=r.order[r.ci];
+  const item=(side,en)=>{
+    const c=BYEN.get(en),done=r.done.has(en);
+    const cls='m'+(done?' ok':'')+(r.sel&&r.sel.side===side&&r.sel.en===en?' sel':'')+(r.flash&&r.flash.some(f=>f.side===side&&f.en===en)?' no':'');
+    return h('button',{class:cls,type:'button',disabled:done,lang:side==='en'?'en':'uk',onclick:()=>mClick(side,en)},side==='en'?c.en:c.uk);
+  };
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Round '+(r.ci+1)+' / '+r.chunks.length),h('span',null,'Tap a phrase, then its translation')),
+    h('div',{class:'match'},h('div',{class:'colm'},o.l.map(en=>item('en',en))),h('div',{class:'colm'},o.r.map(en=>item('uk',en)))));
+};
+function mClick(side,en){
+  const r=EX.run;
+  if(r.flash||r.done.has(en))return;
+  if(!r.sel||r.sel.side===side){r.sel={side,en};redraw();return;}
+  const a=r.sel;
+  if(a.en===en){
+    r.done.add(en);r.sel=null;
+    if(r.chunks[r.ci].every(e=>r.done.has(e)))r.ci++;
+    redraw();
+  }else{
+    r.wrong.add(a.side==='en'?a.en:en);
+    r.flash=[a,{side,en}];r.sel=null;redraw();
+    setTimeout(()=>{r.flash=null;redraw();},450);
+  }
+}
+
+DRAW.fill=function(box){
+  const r=EX.run;
+  if(r.empty){box.append(emptyView());return;}
+  if(r.i>=r.qs.length){box.append(resultView('Fill the gap',r.qs.length-r.wrong.size,r.qs.length,r.wrong));return;}
+  const c=BYEN.get(r.qs[r.i]),parts=c.ex.split('___');
+  const inp=h('input',{type:'text',id:'fillInp',autocomplete:'off',autocapitalize:'off',spellcheck:'false','aria-label':'Missing word',value:r.val,disabled:r.checked,class:r.checked?(r.ok?'good':'wrong'):'',style:'width:'+Math.max(6,c.ans.length+3)+'ch'});
+  inp.addEventListener('input',()=>{r.val=inp.value;});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fillCheck();}});
+  const fb=h('p',{class:'fb'+(r.checked?(r.ok?' good':' wrong'):''),role:'status'},r.checked?(r.ok?'Correct!':'Answer: '+c.ans):'');
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Question '+(r.i+1)+' / '+r.qs.length),h('span',null,'Type the missing word')),
+    h('p',{class:'q-sent'},parts[0],inp,parts[1]),
+    h('p',{class:'sit-uk',lang:'uk'},'Hint: '+c.uk),
+    fb,
+    h('div',{class:'row'},r.checked
+      ?[h('button',{class:'btn btn-plain btn-sm',type:'button',onclick:()=>speak(c.ex.replace('___',c.ans))},'Listen'),h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.val='';r.checked=false;r.ok=false;redraw();const i=$('#fillInp');if(i)i.focus();}},'Next')]
+      :[h('button',{class:'btn btn-dark',type:'button',onclick:fillCheck},'Check'),h('button',{class:'btn btn-plain btn-sm',type:'button',onclick:()=>{if(!r.val)r.val=c.ans.charAt(0);redraw();const i=$('#fillInp');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}}},'First letter')]));
+};
+function fillCheck(){
+  const r=EX.run,c=BYEN.get(r.qs[r.i]);
+  if(!r.val.trim()){const i=$('#fillInp');if(i)i.focus();return;}
+  r.checked=true;r.ok=same(r.val,c.ans);
+  if(!r.ok)r.wrong.add(c.en);
+  redraw();
+}
+
+DRAW.quiz=function(box){
+  const r=EX.run;
+  if(r.empty){box.append(emptyView());return;}
+  if(r.i>=r.qs.length){box.append(resultView('Quiz',r.qs.length-r.wrong.size,r.qs.length,r.wrong));return;}
+  const q=r.qs[r.i],c=BYEN.get(q.en),eu=q.dir==='eu';
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Question '+(r.i+1)+' / '+r.qs.length),h('span',null,eu?'English → Ukrainian':'Ukrainian → English')),
+    h('div',{class:'q-phrase'},h('p',{class:'big'+(eu?'':' uk'),lang:eu?'en':'uk'},eu?c.en:c.uk),eu?sayBtn(c):null),
+    h('div',{class:'opts'},q.opts.map(en=>{
+      const oc=BYEN.get(en);
+      let cls='opt';
+      if(r.picked!=null){if(en===q.en)cls+=' good';else if(en===r.picked)cls+=' wrong';}
+      return h('button',{class:cls,type:'button',disabled:r.picked!=null,lang:eu?'uk':'en',onclick:()=>{r.picked=en;if(en!==q.en)r.wrong.add(q.en);redraw();}},eu?oc.uk:oc.en);
+    })),
+    r.picked!=null?h('div',{class:'row'},h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.picked=null;redraw();}},'Next')):null);
+};
+
+DRAW.dict=function(box){
+  const r=EX.run;
+  if(r.empty){box.append(emptyView());return;}
+  if(r.i>=r.qs.length){box.append(resultView('Dictation',r.qs.length-r.wrong.size,r.qs.length,r.wrong));return;}
+  const c=BYEN.get(r.qs[r.i]),txt=sayText(c);
+  if(!SPEECH){box.append(h('p',{class:'muted'},'This browser cannot read text aloud, so dictation is not available here.'));return;}
+  const inp=h('input',{type:'text',id:'dictInp',class:'typed'+(r.checked?(r.ok?' good':' wrong'):''),autocomplete:'off',autocapitalize:'off',spellcheck:'false','aria-label':'Type what you hear',placeholder:'Type what you hear',value:r.val,disabled:r.checked});
+  inp.addEventListener('input',()=>{r.val=inp.value;});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();dictCheck();}});
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Question '+(r.i+1)+' / '+r.qs.length),h('span',null,'Listen and type the phrase')),
+    h('div',{class:'play'},
+      h('button',{class:'btn btn-k btn-sm',type:'button',onclick:()=>speak(txt,0.95)},'▶ Normal'),
+      h('button',{class:'btn btn-plain btn-sm',type:'button',onclick:()=>speak(txt,0.6)},'▶ Slower')),
+    inp,
+    h('p',{class:'fb'+(r.checked?(r.ok?' good':' wrong'):''),role:'status'},r.checked?(r.ok?'Correct! ':'Answer: ')+c.en+' · '+c.uk:''),
+    h('div',{class:'row'},r.checked
+      ?h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.val='';r.checked=false;r.ok=false;redraw();}},'Next')
+      :h('button',{class:'btn btn-dark',type:'button',onclick:dictCheck},'Check')));
+};
+function dictCheck(){
+  const r=EX.run,c=BYEN.get(r.qs[r.i]);
+  if(!r.val.trim()){const i=$('#dictInp');if(i)i.focus();return;}
+  const v=norm(r.val);
+  r.checked=true;r.ok=same(r.val,sayText(c))||same(r.val,c.en);
+  if(!r.ok)r.wrong.add(c.en);
+  redraw();
+}
+
+DRAW.forks=function(box){
+  const r=EX.run;
+  if(!r.items.length){box.append(h('p',{class:'muted'},'No forks for the selected lessons yet.'));return;}
+  if(r.i>=r.items.length){
+    box.append(h('div',{class:'fx-step'},h('span',{class:'label'},'Forks · result'),h('div',{class:'score'},String(r.right),h('small',null,' / '+r.items.length)),h('p',{class:'muted'},'Forks answered with every right word and no wrong one.'),h('div',{class:'row'},h('button',{class:'btn btn-dark',type:'button',onclick:()=>{EX.run=null;renderEx();}},'Try again'))));
+    return;
+  }
+  const f=r.items[r.i];
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Fork '+(r.i+1)+' / '+r.items.length),h('span',null,'Select every word that goes with it')),
+    h('div',{class:'fork'},
+      h('div',{class:'fork-key'},f.word),
+      h('div',{class:'fork-opts'},f.opts.map(o=>{
+        const on=r.sel.has(o),isOk=f.ok.includes(o);
+        let cls='fopt';
+        if(r.checked){if(on&&isOk)cls+=' good';else if(on&&!isOk)cls+=' wrong';else if(!on&&isOk)cls+=' missed';}
+        return h('button',{class:cls,type:'button','aria-pressed':String(on),disabled:r.checked,onclick:()=>{if(on)r.sel.delete(o);else r.sel.add(o);redraw();}},o);
+      }))),
+    r.checked?h('p',{class:'fb',lang:'uk'},f.why):null,
+    h('div',{class:'row'},r.checked
+      ?h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.sel=new Set();r.checked=false;redraw();}},'Next')
+      :h('button',{class:'btn btn-dark',type:'button',disabled:!r.sel.size,onclick:()=>{r.checked=true;if(f.ok.every(o=>r.sel.has(o))&&f.bad.every(o=>!r.sel.has(o)))r.right++;redraw();}},'Check')));
+};
+
+DRAW.sorts=function(box){
+  const r=EX.run;
+  if(!r.sets.length){box.append(h('p',{class:'muted'},'No category sets for the selected lessons yet.'));return;}
+  if(r.i>=r.sets.length){
+    box.append(h('div',{class:'fx-step'},h('span',{class:'label'},'Categories · result'),h('div',{class:'score'},String(r.right),h('small',null,' / '+r.total)),h('p',{class:'muted'},'Phrases placed in the right group.'),h('div',{class:'row'},h('button',{class:'btn btn-dark',type:'button',onclick:()=>{EX.run=null;renderEx();}},'Try again'))));
+    return;
+  }
+  const s=r.sets[r.i],names=Object.keys(s.cats),items=r.order[r.i];
+  const truth={};names.forEach(n=>s.cats[n].forEach(p=>{truth[p]=n;}));
+  const unplaced=items.filter(p=>!r.place[p]);
+  const chip=(p,inBin)=>{
+    let cls='schip',lbl=null;
+    if(r.checked){if(r.place[p]===truth[p])cls+=' good';else{cls+=' wrong';lbl=h('small',null,'→ '+truth[p]);}}
+    else if(r.sel===p)cls+=' sel';
+    return h('button',{class:cls,type:'button',disabled:r.checked,onclick:e=>{e.stopPropagation();r.sel=(r.sel===p?null:p);redraw();}},p,lbl);
+  };
+  const place=n=>{if(r.checked||!r.sel)return;r.place[r.sel]=n;r.sel=null;redraw();};
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Set '+(r.i+1)+' / '+r.sets.length),h('span',null,'Tap a phrase, then a group')),
+    h('p',{class:'big'},s.title),
+    h('div',{class:'pool','aria-label':'Phrases to sort'},unplaced.length?unplaced.map(p=>chip(p,false)):h('span',{class:'note'},'All phrases are placed.')),
+    h('div',{class:'bins'},names.map(n=>h('div',{class:'bin'+(r.sel&&!r.checked?' armed':''),onclick:()=>place(n)},
+      h('button',{class:'bin-name',type:'button'},n),
+      h('div',{class:'bin-items'},items.filter(p=>r.place[p]===n).map(p=>chip(p,true)))))),
+    h('div',{class:'row'},r.checked
+      ?h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.place={};r.sel=null;r.checked=false;redraw();}},r.i+1<r.sets.length?'Next set':'Finish')
+      :[h('button',{class:'btn btn-dark',type:'button',disabled:unplaced.length>0,onclick:()=>{r.checked=true;r.sel=null;r.total+=items.length;r.right+=items.filter(p=>r.place[p]===truth[p]).length;redraw();}},'Check'),
+        h('button',{class:'btn btn-plain btn-sm',type:'button',onclick:()=>{r.place={};r.sel=null;redraw();}},'Reset')]));
+};
+
+function fixParts(f){
+  const t=f.s.split(/\s+/),b=f.bad.split(/\s+/);let at=-1;
+  for(let i=0;i+b.length<=t.length;i++){if(b.every((w,j)=>t[i+j]===w)){at=i;break;}}
+  if(at<0)return{before:t,after:[],missing:true};
+  return{before:t.slice(0,at),after:t.slice(at+b.length)};
+}
+DRAW.fix=function(box){
+  const r=EX.run;
+  if(r.empty||!r.qs.length){box.append(emptyView());return;}
+  if(r.i>=r.qs.length){box.append(resultView('Mistakes',r.qs.length-r.wrong.size,r.qs.length,r.wrong));return;}
+  const f=r.qs[r.i],p=fixParts(f);
+  const part=(w,key,isBad)=>{
+    let cls='fx-part';
+    if(r.found&&isBad)cls+=' found';else if(r.miss.has(key))cls+=' miss';
+    return h('button',{class:cls,type:'button',disabled:r.found,onclick:()=>{
+      if(r.found)return;
+      if(isBad)r.found=true;else{r.miss.add(key);r.wrong.add(f.en);}
+      redraw();
+    }},w);
+  };
+  const nodes=[...p.before.map((w,i)=>part(w,'b'+i,false)),part(f.bad,'x',true)];
+  if(r.found)nodes.push(h('span',{class:'fx-part fixed'},f.good));
+  nodes.push(...p.after.map((w,i)=>part(w,'a'+i,false)));
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Sentence '+(r.i+1)+' / '+r.qs.length),h('span',null,'Tap the mistake')),
+    h('div',{class:'fx-sent',lang:'en'},nodes),
+    r.found?h('p',{class:'fb good',lang:'uk'},f.why):h('p',{class:'fb'+(r.miss.size?' wrong':''),role:'status'},r.miss.size?'Not that one. Try another part.':''),
+    r.found?h('div',{class:'row'},h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.found=false;r.miss=new Set();redraw();}},'Next')):null);
+};
+
+DRAW.sit=function(box){
+  const r=EX.run;
+  if(r.empty||!r.qs.length){box.append(emptyView());return;}
+  if(r.i>=r.qs.length){box.append(resultView('Situations',r.qs.length-r.wrong.size,r.qs.length,r.wrong));return;}
+  const q=r.qs[r.i];
+  box.append(
+    h('div',{class:'q-meta'},h('span',null,'Question '+(r.i+1)+' / '+r.qs.length),h('span',null,'Which phrase fits?')),
+    h('div',{class:'sit-box'},h('p',{class:'sit-text',lang:'en'},q.s.sit),h('p',{class:'sit-uk',lang:'uk'},q.s.uk)),
+    h('div',{class:'opts'},q.opts.map(en=>{
+      let cls='opt';
+      if(r.picked!=null){if(en===q.s.en)cls+=' good';else if(en===r.picked)cls+=' wrong';}
+      return h('button',{class:cls,type:'button',disabled:r.picked!=null,lang:'en',onclick:()=>{r.picked=en;if(en!==q.s.en)r.wrong.add(q.s.en);redraw();}},en);
+    })),
+    r.picked!=null?h('div',{class:'row'},h('button',{class:'btn btn-dark',type:'button',onclick:()=>{r.i++;r.picked=null;redraw();}},'Next')):null);
+};
+
+/* ============================ VIEWS ============================ */
+let view='cards';
+function renderAll(){
+  renderHeader();
+  if(view==='cards')renderCards();else renderEx();
+}
+function setView(v){
+  view=v;
+  $('#viewCards').hidden=v!=='cards';
+  $('#viewEx').hidden=v!=='ex';
+  $('#tabCards').setAttribute('aria-selected',String(v==='cards'));
+  $('#tabEx').setAttribute('aria-selected',String(v==='ex'));
+  renderAll();
+  window.scrollTo(0,0);
+}
+$('#tabCards').onclick=()=>setView('cards');
+$('#tabEx').onclick=()=>setView('ex');
+
+/* ============================ SETTINGS ============================ */
+$('#voiceSel').addEventListener('change',e=>{S.ui.voice=e.target.value;save();});
+$('#listen').onclick=()=>speak('She was confident, and fortunately nobody was hurt.');
+function enc(){return 'AP1.'+btoa(unescape(encodeURIComponent(JSON.stringify({v:1,p:S.p,b:S.b,ui:S.ui}))));}
+function dec(t){
+  t=t.replace(/\s+/g,'');
+  if(t.slice(0,4)!=='AP1.')throw new Error('bad');
+  const o=JSON.parse(decodeURIComponent(escape(atob(t.slice(4)))));
+  if(!isObj(o)||!isObj(o.p))throw new Error('bad');
+  return o;
+}
+function codeMsg(t){$('#codeMsg').textContent=t;}
+$('#copyCode').onclick=()=>{
+  const t=enc(),ta=$('#code');
+  ta.value=t;ta.focus();ta.select();
+  let p=null;
+  try{p=navigator.clipboard.writeText(t);}catch(e){p=null;}
+  const manual='Select the code above and copy it by hand.';
+  if(p&&p.then)p.then(()=>codeMsg('Code copied. On the other device, paste it here and press Restore from code.'),()=>codeMsg(manual));
+  else codeMsg(manual);
+};
+$('#restore').onclick=()=>{
+  try{
+    const o=dec($('#code').value);
+    const keepVoice=S.ui.voice;
+    S=normState(o);
+    if(!S.ui.voice)S.ui.voice=keepVoice;
+    save();fillVoiceSelect();EX.run=null;renderAll();
+    codeMsg('Progress restored.');
+  }catch(e){codeMsg('That code is not valid. Copy it again from the other device.');}
+};
+let resetArmed=false,resetTimer=null;
+function disarm(){resetArmed=false;clearTimeout(resetTimer);$('#reset').textContent='Reset progress';}
+$('#reset').onclick=()=>{
+  if(!resetArmed){
+    resetArmed=true;$('#reset').textContent='Click again to erase all progress';$('#resetMsg').textContent='';
+    resetTimer=setTimeout(disarm,5000);
+  }else{
+    const v=S.ui.voice;S=fresh();S.ui.voice=v;save();disarm();EX.run=null;
+    $('#resetMsg').textContent='Progress erased.';
+    renderAll();
+  }
+};
+
+/* ============================ START ============================ */
+if(SPEECH){try{speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}loadVoices();}
+else fillVoiceSelect();
+save();
+renderAll();
+</script>
+
+</body></html>
